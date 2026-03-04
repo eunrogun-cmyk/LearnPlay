@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnPlay — 학습 게임 플랫폼</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0e1420;
+    --surface2: #141c2e;
+    --border: rgba(255,255,255,0.07);
+    --accent1: #4af0b0;
+    --accent2: #7b6ff0;
+    --accent3: #f06b6b;
+    --accent4: #f0c44a;
+    --text: #e8edf8;
+    --muted: #6a7898;
+    --card-glow1: rgba(74,240,176,0.12);
+    --card-glow2: rgba(123,111,240,0.12);
+    --card-glow3: rgba(240,107,107,0.12);
+    --card-glow4: rgba(240,196,74,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE + GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(74,240,176,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(123,111,240,0.07) 0%, transparent 55%),
+      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='0.3' opacity='0.04'%3E%3Cpath d='M0 20h40M20 0v40'/%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    height: 68px;
+    background: rgba(8,12,20,0.75);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent1);
+    box-shadow: 0 0 10px var(--accent1);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.6; transform:scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent1);
+    color: var(--bg) !important;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 5% 80px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(74,240,176,0.1);
+    border: 1px solid rgba(74,240,176,0.25);
+    color: var(--accent1);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '◆';
+    font-size: 0.5rem;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .hero-title span {
+    background: linear-gradient(120deg, var(--accent1) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 44px;
+    font-weight: 300;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent1);
+    color: var(--bg);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(74,240,176,0.35);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 0 5% 100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 28px 24px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+
+  .stat-item:last-child { border-right: none; }
+  .stat-item:hover { background: var(--surface2); }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent1);
+    letter-spacing: -0.04em;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .section-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  /* ── CATEGORIES ── */
+  .categories-section {
+    position: relative;
+    z-index: 1;
+    padding: 0 5% 100px;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .cat-card:nth-child(1)::before { background: var(--card-glow1); }
+  .cat-card:nth-child(2)::before { background: var(--card-glow2); }
+  .cat-card:nth-child(3)::before { background: var(--card-glow3); }
+  .cat-card:nth-child(4)::before { background: var(--card-glow4); }
+
+  .cat-card:hover::before { opacity: 1; }
+  .cat-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .cat-card:nth-child(1):hover { box-shadow: 0 12px 40px rgba(74,240,176,0.15); }
+  .cat-card:nth-child(2):hover { box-shadow: 0 12px 40px rgba(123,111,240,0.15); }
+  .cat-card:nth-child(3):hover { box-shadow: 0 12px 40px rgba(240,107,107,0.15); }
+  .cat-card:nth-child(4):hover { box-shadow: 0 12px 40px rgba(240,196,74,0.15); }
+
+  .cat-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .cat-card:nth-child(1) .cat-icon { background: rgba(74,240,176,0.12); }
+  .cat-card:nth-child(2) .cat-icon { background: rgba(123,111,240,0.12); }
+  .cat-card:nth-child(3) .cat-icon { background: rgba(240,107,107,0.12); }
+  .cat-card:nth-child(4) .cat-icon { background: rgba(240,196,74,0.12); }
+
+  .cat-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .cat-count {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* ── GAME UPLOAD ── */
+  .upload-section {
+    position: relative;
+    z-index: 1;
+    padding: 0 5% 100px;
+  }
+
+  .upload-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 56px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .upload-zone {
+    border: 2px dashed rgba(74,240,176,0.3);
+    border-radius: 14px;
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.25s;
+    background: rgba(74,240,176,0.02);
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .upload-zone:hover,
+  .upload-zone.drag-over {
+    border-color: var(--accent1);
+    background: rgba(74,240,176,0.06);
+  }
+
+  .upload-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: rgba(74,240,176,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.8rem;
+    transition: transform 0.25s;
+  }
+
+  .upload-zone:hover .upload-icon { transform: translateY(-4px); }
+
+  .upload-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .upload-desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .upload-desc span { color: var(--accent1); cursor: pointer; }
+
+  .file-input { display: none; }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 3px rgba(74,240,176,0.1);
+  }
+
+  .form-select option { background: var(--surface); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent1) 0%, #2dd9a0 100%);
+    color: var(--bg);
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.02em;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(74,240,176,0.3);
+  }
+
+  /* ── FEATURED GAMES ── */
+  .games-section {
+    position: relative;
+    z-index: 1;
+    padding: 0 5% 100px;
+  }
+
+  .games-filter {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent1);
+    color: var(--bg);
+    border-color: var(--accent1);
+    font-weight: 700;
+  }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .game-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative;
+  }
+
+  .game-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .game-thumb {
+    height: 160px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    overflow: hidden;
+  }
+
+  .game-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, var(--surface) 100%);
+  }
+
+  .game-thumb-1 { background: linear-gradient(135deg, #1a2f4a 0%, #0a4a3a 100%); }
+  .game-thumb-2 { background: linear-gradient(135deg, #2a1a4a 0%, #3a1a2a 100%); }
+  .game-thumb-3 { background: linear-gradient(135deg, #4a2a1a 0%, #4a1a1a 100%); }
+  .game-thumb-4 { background: linear-gradient(135deg, #1a3a2a 0%, #1a4a4a 100%); }
+  .game-thumb-5 { background: linear-gradient(135deg, #3a3a1a 0%, #2a4a1a 100%); }
+  .game-thumb-6 { background: linear-gradient(135deg, #1a2a4a 0%, #2a1a4a 100%); }
+
+  .game-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 1;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .badge-new { background: var(--accent1); color: var(--bg); }
+  .badge-hot { background: var(--accent3); color: white; }
+  .badge-top { background: var(--accent4); color: var(--bg); }
+
+  .game-info {
+    padding: 18px 20px 22px;
+  }
+
+  .game-category {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .game-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.0rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+
+  .game-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .game-meta-item { display: flex; align-items: center; gap: 4px; }
+
+  .rating { color: var(--accent4); }
+
+  .game-card a.play-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    background: rgba(8,12,20,0.55);
+    backdrop-filter: blur(2px);
+    border-radius: 16px;
+    transition: opacity 0.22s;
+    text-decoration: none;
+  }
+
+  .game-card:hover a.play-overlay { opacity: 1; }
+
+  .play-btn-inner {
+    background: var(--accent1);
+    color: var(--bg);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 12px 28px;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 24px rgba(74,240,176,0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    position: relative;
+    z-index: 1;
+    padding: 0 5% 100px;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+
+  .steps-grid::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 16.67%;
+    right: 16.67%;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent1), var(--accent2));
+    opacity: 0.3;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: transform 0.25s;
+  }
+
+  .step-card:hover { transform: translateY(-4px); }
+
+  .step-num {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 1px solid rgba(74,240,176,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent1);
+    background: rgba(74,240,176,0.05);
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+  }
+
+  .step-desc {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 48px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-copy {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── UPLOADED FILE PREVIEW ── */
+  .file-preview {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    background: rgba(74,240,176,0.08);
+    border: 1px solid rgba(74,240,176,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+
+  .file-preview.show { display: flex; }
+
+  .file-icon { font-size: 1.5rem; }
+
+  .file-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--accent1);
+  }
+
+  .file-size { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  .file-remove {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .file-remove:hover { color: var(--accent3); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface);
+    border: 1px solid rgba(74,240,176,0.3);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast-icon { font-size: 1.2rem; }
+  .toast-msg { font-size: 0.88rem; font-weight: 500; }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 900px) {
+    .categories-grid { grid-template-columns: repeat(2, 1fr); }
+    .games-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-bar { flex-wrap: wrap; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); min-width: 50%; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .steps-grid::before { display: none; }
+    .upload-container { padding: 32px 24px; }
+    .form-row { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <span class="logo-dot"></span>
+    LearnPlay
+  </a>
+  <ul class="nav-links">
+    <li><a href="#games">게임 탐색</a></li>
+    <li><a href="#upload">업로드</a></li>
+    <li><a href="#how">이용 방법</a></li>
+    <li><a href="#upload" class="nav-cta">게임 업로드</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">학습 게임 플랫폼 베타</div>
+  <h1 class="hero-title">
+    배우면서<br><span>즐기는</span> 공간
+  </h1>
+  <p class="hero-desc">
+    교육자와 개발자가 만드는 학습 게임 플랫폼.<br>
+    당신의 게임을 업로드하고 전 세계 학습자와 공유하세요.
+  </p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'})">게임 탐색하기</button>
+    <button class="btn-secondary" onclick="document.getElementById('upload').scrollIntoView({behavior:'smooth'})">게임 업로드</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar reveal">
+  <div class="stat-item">
+    <div class="stat-num">1,240+</div>
+    <div class="stat-label">등록된 게임</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">48K</div>
+    <div class="stat-label">활성 학습자</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">320+</div>
+    <div class="stat-label">교육자 및 개발자</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">12</div>
+    <div class="stat-label">학습 카테고리</div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="categories-section" id="games">
+  <div class="section-header reveal">
+    <div class="section-tag">카테고리</div>
+    <h2 class="section-title">원하는 분야를 선택하세요</h2>
+  </div>
+  <div class="categories-grid reveal">
+    <div class="cat-card" onclick="filterGames('수학')">
+      <div class="cat-icon">🔢</div>
+      <div>
+        <div class="cat-name">수학</div>
+        <div class="cat-count">게임 342개</div>
+      </div>
+    </div>
+    <div class="cat-card" onclick="filterGames('언어')">
+      <div class="cat-icon">📖</div>
+      <div>
+        <div class="cat-name">언어 / 독해</div>
+        <div class="cat-count">게임 218개</div>
+      </div>
+    </div>
+    <div class="cat-card" onclick="filterGames('과학')">
+      <div class="cat-icon">🔬</div>
+      <div>
+        <div class="cat-name">과학</div>
+        <div class="cat-count">게임 187개</div>
+      </div>
+    </div>
+    <div class="cat-card" onclick="filterGames('코딩')">
+      <div class="cat-icon">💻</div>
+      <div>
+        <div class="cat-name">코딩 / 논리</div>
+        <div class="cat-count">게임 493개</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED GAMES -->
+<section class="games-section">
+  <div class="section-header reveal">
+    <div class="section-tag">추천 게임</div>
+    <h2 class="section-title">지금 인기 있는 학습 게임</h2>
+  </div>
+
+  <div class="games-filter reveal">
+    <button class="filter-btn active" onclick="setFilter(this,'전체')">전체</button>
+    <button class="filter-btn" onclick="setFilter(this,'수학')">수학</button>
+    <button class="filter-btn" onclick="setFilter(this,'언어')">언어</button>
+    <button class="filter-btn" onclick="setFilter(this,'과학')">과학</button>
+    <button class="filter-btn" onclick="setFilter(this,'코딩')">코딩</button>
+  </div>
+
+  <div class="games-grid reveal" id="gamesGrid">
+    <!-- ✅ 수학 퀴즈 챔피언 — 실제 연결 -->
+    <div class="game-card" data-cat="수학">
+      <a class="play-overlay" href="math-quiz.html" target="_blank">
+        <div class="play-btn-inner">▶ 지금 플레이</div>
+      </a>
+      <div class="game-thumb game-thumb-1">
+        <span class="game-badge badge-hot">🔥 인기</span>
+        🧮
+      </div>
+      <div class="game-info">
+        <div class="game-category">수학</div>
+        <div class="game-title">수학 퀴즈 챔피언</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★★</span>
+          <span class="game-meta-item">👤 2.3K 플레이어</span>
+          <span class="game-meta-item">🕐 10분</span>
+        </div>
+      </div>
+    </div>
+    <div class="game-card" data-cat="언어">
+      <a class="play-overlay" href="#" onclick="comingSoon(event)">
+        <div class="play-btn-inner" style="background:var(--muted);box-shadow:none;">🔒 준비 중</div>
+      </a>
+      <div class="game-thumb game-thumb-2">
+        <span class="game-badge badge-new">✨ 신작</span>
+        📚
+      </div>
+      <div class="game-info">
+        <div class="game-category">언어</div>
+        <div class="game-title">단어 탐험가 — 어휘력 강화</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★☆</span>
+          <span class="game-meta-item">👤 1.1K 플레이어</span>
+          <span class="game-meta-item">🕐 15분</span>
+        </div>
+      </div>
+    </div>
+    <div class="game-card" data-cat="과학">
+      <a class="play-overlay" href="#" onclick="comingSoon(event)">
+        <div class="play-btn-inner" style="background:var(--muted);box-shadow:none;">🔒 준비 중</div>
+      </a>
+      <div class="game-thumb game-thumb-3">
+        <span class="game-badge badge-top">🏆 TOP</span>
+        🌍
+      </div>
+      <div class="game-info">
+        <div class="game-category">과학</div>
+        <div class="game-title">지구 탐험 — 환경 퀴즈</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★★</span>
+          <span class="game-meta-item">👤 3.7K 플레이어</span>
+          <span class="game-meta-item">🕐 20분</span>
+        </div>
+      </div>
+    </div>
+    <div class="game-card" data-cat="코딩">
+      <a class="play-overlay" href="#" onclick="comingSoon(event)">
+        <div class="play-btn-inner" style="background:var(--muted);box-shadow:none;">🔒 준비 중</div>
+      </a>
+      <div class="game-thumb game-thumb-4">
+        <span class="game-badge badge-new">✨ 신작</span>
+        🤖
+      </div>
+      <div class="game-info">
+        <div class="game-category">코딩</div>
+        <div class="game-title">코드 빌더 — 알고리즘 퍼즐</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★☆</span>
+          <span class="game-meta-item">👤 890 플레이어</span>
+          <span class="game-meta-item">🕐 25분</span>
+        </div>
+      </div>
+    </div>
+    <div class="game-card" data-cat="수학">
+      <a class="play-overlay" href="#" onclick="comingSoon(event)">
+        <div class="play-btn-inner" style="background:var(--muted);box-shadow:none;">🔒 준비 중</div>
+      </a>
+      <div class="game-thumb game-thumb-5">
+        🎯
+      </div>
+      <div class="game-info">
+        <div class="game-category">수학</div>
+        <div class="game-title">타임 어택 — 암산 스피드</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★★</span>
+          <span class="game-meta-item">👤 4.2K 플레이어</span>
+          <span class="game-meta-item">🕐 5분</span>
+        </div>
+      </div>
+    </div>
+    <div class="game-card" data-cat="언어">
+      <a class="play-overlay" href="#" onclick="comingSoon(event)">
+        <div class="play-btn-inner" style="background:var(--muted);box-shadow:none;">🔒 준비 중</div>
+      </a>
+      <div class="game-thumb game-thumb-6">
+        <span class="game-badge badge-hot">🔥 인기</span>
+        ✍️
+      </div>
+      <div class="game-info">
+        <div class="game-category">언어</div>
+        <div class="game-title">스토리 메이커 — 창작 퀘스트</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★☆</span>
+          <span class="game-meta-item">👤 1.5K 플레이어</span>
+          <span class="game-meta-item">🕐 30분</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UPLOAD -->
+<section class="upload-section" id="upload">
+  <div class="section-header reveal">
+    <div class="section-tag">게임 업로드</div>
+    <h2 class="section-title">당신의 게임을 세상에<br>공유하세요</h2>
+  </div>
+
+  <div class="upload-container reveal">
+
+    <!-- GitHub 방식 안내 박스 -->
+    <div style="background:rgba(74,240,176,0.06);border:1px solid rgba(74,240,176,0.2);border-radius:14px;padding:20px 22px;margin-bottom:28px;display:flex;gap:14px;align-items:flex-start;">
+      <span style="font-size:1.4rem;margin-top:2px;">ℹ️</span>
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:6px;color:var(--accent1)">GitHub Pages 방식으로 게임을 등록하세요</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.7;">
+          ① 게임 HTML 파일을 GitHub 저장소에 업로드<br>
+          ② 아래에 파일명과 정보를 입력하면 게임 카드가 생성됩니다<br>
+          ③ 예: <code style="color:var(--accent1);background:rgba(74,240,176,0.08);padding:1px 6px;border-radius:4px;">math-quiz.html</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">게임 이름 *</label>
+        <input type="text" id="inputTitle" class="form-input" placeholder="예: 수학 퀴즈 챔피언">
+      </div>
+      <div class="form-group">
+        <label class="form-label">HTML 파일명 *</label>
+        <input type="text" id="inputFile" class="form-input" placeholder="예: math-quiz.html">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">카테고리 *</label>
+        <select id="inputCat" class="form-select">
+          <option value="" disabled selected>카테고리 선택</option>
+          <option>수학</option>
+          <option>언어 / 독해</option>
+          <option>과학</option>
+          <option>코딩 / 논리</option>
+          <option>역사 / 사회</option>
+          <option>영어</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">플레이 시간</label>
+        <select id="inputTime" class="form-select">
+          <option value="" disabled selected>예상 시간</option>
+          <option>5분 이하</option>
+          <option>5~15분</option>
+          <option>15~30분</option>
+          <option>30~60분</option>
+          <option>60분 이상</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">게임 설명</label>
+      <textarea id="inputDesc" class="form-textarea" placeholder="게임의 목표, 방법, 학습 효과 등을 간략히 설명해주세요..."></textarea>
+    </div>
+
+    <button class="submit-btn" onclick="submitGame()">🚀 게임 카드 등록하기</button>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-header reveal">
+    <div class="section-tag">이용 방법</div>
+    <h2 class="section-title">3단계로 시작하세요</h2>
+  </div>
+  <div class="steps-grid reveal">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <h3 class="step-title">게임 파일 준비</h3>
+      <p class="step-desc">HTML, ZIP, APK 등 다양한 형식의 학습 게임 파일을 준비하세요. 웹 기반 게임이 가장 빠르게 공유됩니다.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <h3 class="step-title">정보 입력 & 업로드</h3>
+      <p class="step-desc">게임 이름, 카테고리, 설명을 입력하고 파일을 업로드하면 자동으로 검토가 시작됩니다.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <h3 class="step-title">전 세계 학습자와 공유</h3>
+      <p class="step-desc">승인 후 플랫폼에 게재되어 전 세계 학습자들이 즐길 수 있습니다. 플레이 통계도 확인하세요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2026 LearnPlay. 더 나은 학습을 위해 만들어졌습니다.</div>
+  <ul class="footer-links">
+    <li><a href="#">이용약관</a></li>
+    <li><a href="#">개인정보처리방침</a></li>
+    <li><a href="#">문의하기</a></li>
+  </ul>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">🎉</span>
+  <span class="toast-msg">게임이 성공적으로 업로드되었습니다!</span>
+</div>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Filter
+  function setFilter(btn, cat) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterGames(cat);
+  }
+
+  function filterGames(cat) {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      if(b.textContent.trim() === cat) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    const cards = document.querySelectorAll('.game-card');
+    cards.forEach(c => {
+      const show = cat === '전체' || c.dataset.cat === cat;
+      c.style.display = show ? '' : 'none';
+    });
+    if(cat !== '전체') document.getElementById('games').scrollIntoView({behavior:'smooth'});
+  }
+
+  // Coming soon overlay
+  function comingSoon(e) {
+    e.preventDefault();
+    showToast('🔒', '곧 출시 예정인 게임입니다!');
+  }
+
+  // Submit — 실제 게임 카드 동적 추가
+  const thumbColors = [
+    'linear-gradient(135deg,#1a2f4a,#0a4a3a)',
+    'linear-gradient(135deg,#2a1a4a,#3a1a2a)',
+    'linear-gradient(135deg,#4a2a1a,#4a1a1a)',
+    'linear-gradient(135deg,#1a3a2a,#1a4a4a)',
+  ];
+  const thumbEmojis = { '수학':'🧮', '언어 / 독해':'📖', '과학':'🔬', '코딩 / 논리':'💻', '역사 / 사회':'🏛️', '영어':'🔤', '기타':'🎮' };
+
+  function submitGame() {
+    const title = document.getElementById('inputTitle').value.trim();
+    const file  = document.getElementById('inputFile').value.trim();
+    const cat   = document.getElementById('inputCat').value;
+    const time  = document.getElementById('inputTime').value || '–';
+
+    if (!title || !file || !cat) {
+      showToast('⚠️', '게임 이름, 파일명, 카테고리를 입력해주세요.');
+      return;
+    }
+    if (!file.endsWith('.html')) {
+      showToast('⚠️', '파일명은 .html로 끝나야 합니다. 예: my-game.html');
+      return;
+    }
+
+    // 새 카드 생성
+    const grid = document.getElementById('gamesGrid');
+    const bg = thumbColors[Math.floor(Math.random() * thumbColors.length)];
+    const emoji = thumbEmojis[cat] || '🎮';
+    const catShort = cat.split('/')[0].trim();
+
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.dataset.cat = catShort;
+    card.innerHTML = `
+      <a class="play-overlay" href="${file}" target="_blank">
+        <div class="play-btn-inner">▶ 지금 플레이</div>
+      </a>
+      <div class="game-thumb" style="background:${bg};height:160px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;overflow:hidden;">
+        <span class="game-badge badge-new" style="position:absolute;top:12px;left:12px;z-index:1;">✨ 신작</span>
+        ${emoji}
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,var(--surface) 100%);"></div>
+      </div>
+      <div class="game-info">
+        <div class="game-category">${catShort}</div>
+        <div class="game-title">${title}</div>
+        <div class="game-meta">
+          <span class="game-meta-item rating">★★★★★</span>
+          <span class="game-meta-item">👤 새 게임</span>
+          <span class="game-meta-item">🕐 ${time}</span>
+        </div>
+      </div>`;
+
+    grid.prepend(card);
+
+    // 폼 초기화
+    document.getElementById('inputTitle').value = '';
+    document.getElementById('inputFile').value = '';
+    document.getElementById('inputCat').selectedIndex = 0;
+    document.getElementById('inputTime').selectedIndex = 0;
+    document.getElementById('inputDesc').value = '';
+
+    showToast('🎉', `"${title}" 게임 카드가 추가되었습니다!`);
+    document.getElementById('games').scrollIntoView({ behavior: 'smooth' });
+
+    // 새 카드에 애니메이션
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 100);
+  }
+
+  function showToast(icon, msg) {
+    const toast = document.getElementById('toast');
+    toast.querySelector('.toast-icon').textContent = icon;
+    toast.querySelector('.toast-msg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>

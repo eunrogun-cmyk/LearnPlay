@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수학 퀴즈 챔피언</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0e1420;
+    --surface2: #141c2e;
+    --border: rgba(255,255,255,0.08);
+    --accent: #4af0b0;
+    --accent2: #7b6ff0;
+    --danger: #f06b6b;
+    --warn: #f0c44a;
+    --text: #e8edf8;
+    --muted: #6a7898;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 15%, rgba(74,240,176,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 85%, rgba(123,111,240,0.08) 0%, transparent 55%);
+    pointer-events:none;
+  }
+
+  .game-wrapper {
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── START SCREEN ── */
+  .start-screen {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 56px 40px;
+    text-align: center;
+  }
+
+  .game-icon {
+    width: 88px; height: 88px;
+    border-radius: 24px;
+    background: rgba(74,240,176,0.1);
+    border: 1px solid rgba(74,240,176,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.6rem;
+    margin: 0 auto 28px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .start-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+  }
+
+  .start-title span {
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .start-desc {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+
+  .difficulty-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .difficulty-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .diff-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .diff-btn.selected { color: var(--bg); }
+  .diff-btn[data-d="easy"].selected { background: var(--accent); border-color: var(--accent); }
+  .diff-btn[data-d="medium"].selected { background: var(--warn); border-color: var(--warn); }
+  .diff-btn[data-d="hard"].selected { background: var(--danger); border-color: var(--danger); }
+  .diff-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  .start-btn {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(74,240,176,0.3);
+  }
+
+  /* ── QUIZ SCREEN ── */
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .progress-wrap {
+    flex: 1;
+    margin-right: 16px;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+
+  .score-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* Timer */
+  .timer-wrap {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .timer-ring {
+    width: 72px; height: 72px;
+    margin: 0 auto 0;
+    position: relative;
+  }
+
+  .timer-ring svg { transform: rotate(-90deg); }
+
+  .timer-circle-bg { fill: none; stroke: var(--surface2); stroke-width: 5; }
+  .timer-circle { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round;
+    stroke-dasharray: 188; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+
+  .timer-num {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+
+  /* Question card */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 32px 32px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(74,240,176,0.04);
+  }
+
+  .q-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .q-hint {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* Answers */
+  .answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .ans-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 18px 12px;
+    border-radius: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ans-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(74,240,176,0.06);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .ans-btn:not(:disabled):hover {
+    border-color: rgba(74,240,176,0.5);
+    transform: translateY(-2px);
+  }
+
+  .ans-btn:not(:disabled):hover::before { opacity: 1; }
+
+  .ans-btn.correct {
+    background: rgba(74,240,176,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    animation: correctPop 0.4s ease;
+  }
+
+  .ans-btn.wrong {
+    background: rgba(240,107,107,0.12);
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: shake 0.4s ease;
+  }
+
+  .ans-btn:disabled { cursor: default; }
+
+  @keyframes correctPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Feedback bar */
+  .feedback {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transition: opacity 0.2s;
+    margin-bottom: 12px;
+  }
+
+  .feedback.show { opacity: 1; }
+  .feedback.ok { background: rgba(74,240,176,0.1); color: var(--accent); }
+  .feedback.no { background: rgba(240,107,107,0.1); color: var(--danger); }
+
+  /* Streak */
+  .streak {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    height: 20px;
+  }
+
+  .streak span { color: var(--warn); font-weight: 700; }
+
+  /* ── RESULT SCREEN ── */
+  .result-screen {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 36px;
+    text-align: center;
+  }
+
+  .result-emoji {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    animation: bounceIn 0.5s ease;
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0); opacity:0; }
+    60% { transform: scale(1.2); opacity:1; }
+    100% { transform: scale(1); }
+  }
+
+  .result-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+
+  .result-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 36px;
+  }
+
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .result-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 12px;
+  }
+
+  .result-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .result-stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+
+  .result-btns { display: flex; gap: 12px; }
+
+  .retry-btn {
+    flex: 1;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,240,176,0.3); }
+
+  .home-btn {
+    flex: 1;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .home-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+
+  /* Rating stars */
+  .stars {
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="game-wrapper">
+
+  <!-- START -->
+  <div class="screen active" id="startScreen">
+    <div class="start-screen">
+      <div class="game-icon">🧮</div>
+      <h1 class="start-title">수학 퀴즈<br><span>챔피언</span></h1>
+      <p class="start-desc">10문제를 풀어 점수를 올려보세요.<br>빠르게 맞출수록 보너스 점수!</p>
+      <div class="difficulty-label">난이도 선택</div>
+      <div class="difficulty-btns">
+        <button class="diff-btn selected" data-d="easy" onclick="selectDiff(this)">🟢 쉬움</button>
+        <button class="diff-btn" data-d="medium" onclick="selectDiff(this)">🟡 보통</button>
+        <button class="diff-btn" data-d="hard" onclick="selectDiff(this)">🔴 어려움</button>
+      </div>
+      <button class="start-btn" onclick="startGame()">게임 시작 →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="quizScreen">
+    <div class="quiz-header">
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span id="qLabel">문제 1 / 10</span>
+          <span id="streakInfo"></span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+      <div class="score-badge">⭐ <span id="scoreDisplay">0</span></div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-ring">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle class="timer-circle-bg" cx="36" cy="36" r="30"/>
+          <circle class="timer-circle" id="timerCircle" cx="36" cy="36" r="30"/>
+        </svg>
+        <div class="timer-num" id="timerNum">15</div>
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="q-num" id="qNum">문제 1</div>
+      <div class="q-text" id="qText">12 + 8 = ?</div>
+      <div class="q-hint" id="qHint">정답을 선택하세요</div>
+    </div>
+
+    <div class="answers-grid" id="answersGrid"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="streak" id="streakBadge"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen">
+    <div class="result-screen">
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <div class="stars" id="resultStars">★★★★★</div>
+      <h2 class="result-title" id="resultTitle">완벽해요!</h2>
+      <p class="result-sub" id="resultSub">모든 문제를 맞췄어요!</p>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-num" id="rScore" style="color:var(--accent)">0</div>
+          <div class="result-stat-label">최종 점수</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num" id="rCorrect" style="color:var(--warn)">0</div>
+          <div class="result-stat-label">정답 수</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num" id="rStreak" style="color:var(--accent2)">0</div>
+          <div class="result-stat-label">최고 연속</div>
+        </div>
+      </div>
+      <div class="result-btns">
+        <button class="retry-btn" onclick="retryGame()">🔄 다시 도전</button>
+        <button class="home-btn" onclick="goHome()">🏠 홈으로</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 10;
+  const TIME_LIMIT = { easy: 15, medium: 12, hard: 8 };
+
+  let difficulty = 'easy';
+  let questions = [];
+  let current = 0;
+  let score = 0;
+  let streak = 0;
+  let maxStreak = 0;
+  let correct = 0;
+  let timerInterval = null;
+  let timeLeft = 15;
+  let answered = false;
+
+  function selectDiff(btn) {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    difficulty = btn.dataset.d;
+  }
+
+  function generate(diff) {
+    const qs = [];
+    const ops = diff === 'easy' ? ['+','-'] : diff === 'medium' ? ['+','-','×'] : ['+','-','×','÷'];
+    for (let i = 0; i < TOTAL; i++) {
+      let op = ops[Math.floor(Math.random() * ops.length)];
+      let a, b, answer;
+      if (op === '+') {
+        a = rand(diff); b = rand(diff);
+        answer = a + b;
+      } else if (op === '-') {
+        a = rand(diff); b = rand(diff);
+        if (b > a) [a,b] = [b,a];
+        answer = a - b;
+      } else if (op === '×') {
+        a = diff === 'hard' ? r(2,15) : r(2,9);
+        b = diff === 'hard' ? r(2,15) : r(2,9);
+        answer = a * b;
+      } else {
+        b = r(2, diff === 'hard' ? 12 : 9);
+        answer = r(2, diff === 'hard' ? 12 : 9);
+        a = b * answer;
+      }
+      const choices = makeChoices(answer, diff);
+      qs.push({ text: `${a} ${op} ${b} = ?`, answer, choices });
+    }
+    return qs;
+  }
+
+  function rand(diff) {
+    if (diff === 'easy') return r(1, 20);
+    if (diff === 'medium') return r(10, 99);
+    return r(10, 999);
+  }
+
+  function r(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function makeChoices(answer, diff) {
+    const set = new Set([answer]);
+    while (set.size < 4) {
+      const spread = diff === 'easy' ? 10 : diff === 'medium' ? 20 : 50;
+      const v = answer + r(-spread, spread);
+      if (v !== answer && v >= 0) set.add(v);
+    }
+    return [...set].sort(() => Math.random() - 0.5);
+  }
+
+  function startGame() {
+    questions = generate(difficulty);
+    current = 0; score = 0; streak = 0; maxStreak = 0; correct = 0;
+    showScreen('quizScreen');
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    if (current >= TOTAL) { endGame(); return; }
+    answered = false;
+    const q = questions[current];
+    document.getElementById('qNum').textContent = `문제 ${current + 1}`;
+    document.getElementById('qLabel').textContent = `문제 ${current + 1} / ${TOTAL}`;
+    document.getElementById('qText').textContent = q.text;
+    document.getElementById('qHint').textContent = '정답을 선택하세요';
+    document.getElementById('progressFill').style.width = (current / TOTAL * 100) + '%';
+    document.getElementById('scoreDisplay').textContent = score;
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('streakBadge').innerHTML = streak >= 2 ? `🔥 <span>${streak}연속 정답!</span>` : '';
+
+    // Render choices
+    const grid = document.getElementById('answersGrid');
+    grid.innerHTML = '';
+    q.choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'ans-btn';
+      btn.textContent = c;
+      btn.onclick = () => selectAnswer(c, btn);
+      grid.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = TIME_LIMIT[difficulty];
+    updateTimer();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimer();
+      if (timeLeft <= 0) { clearInterval(timerInterval); timeUp(); }
+    }, 1000);
+  }
+
+  function updateTimer() {
+    const circ = document.getElementById('timerCircle');
+    const num = document.getElementById('timerNum');
+    const max = TIME_LIMIT[difficulty];
+    const pct = timeLeft / max;
+    const dash = 188;
+    circ.style.strokeDashoffset = dash * (1 - pct);
+    circ.style.stroke = pct > 0.5 ? 'var(--accent)' : pct > 0.25 ? 'var(--warn)' : 'var(--danger)';
+    num.textContent = timeLeft;
+    num.style.color = pct > 0.5 ? 'var(--text)' : pct > 0.25 ? 'var(--warn)' : 'var(--danger)';
+  }
+
+  function timeUp() {
+    if (answered) return;
+    answered = true;
+    streak = 0;
+    showFeedback(false, '⏰ 시간 초과!');
+    highlightCorrect();
+    disableAnswers();
+    setTimeout(next, 1400);
+  }
+
+  function selectAnswer(val, btn) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timerInterval);
+    const q = questions[current];
+    const isOk = val === q.answer;
+
+    if (isOk) {
+      const bonus = Math.ceil(timeLeft / TIME_LIMIT[difficulty] * 50);
+      const pts = 100 + bonus;
+      score += pts;
+      streak++;
+      correct++;
+      maxStreak = Math.max(maxStreak, streak);
+      btn.classList.add('correct');
+      showFeedback(true, streak >= 3 ? `🔥 +${pts}점! ${streak}연속!` : `✓ 정답! +${pts}점`);
+    } else {
+      streak = 0;
+      btn.classList.add('wrong');
+      highlightCorrect();
+      showFeedback(false, `✗ 오답! 정답은 ${q.answer}`);
+    }
+
+    disableAnswers();
+    setTimeout(next, 1200);
+  }
+
+  function highlightCorrect() {
+    const q = questions[current];
+    document.querySelectorAll('.ans-btn').forEach(b => {
+      if (parseInt(b.textContent) === q.answer || b.textContent == q.answer) b.classList.add('correct');
+    });
+  }
+
+  function disableAnswers() {
+    document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+  }
+
+  function showFeedback(ok, msg) {
+    const fb = document.getElementById('feedback');
+    fb.textContent = msg;
+    fb.className = 'feedback show ' + (ok ? 'ok' : 'no');
+  }
+
+  function next() {
+    current++;
+    loadQuestion();
+  }
+
+  function endGame() {
+    clearInterval(timerInterval);
+    showScreen('resultScreen');
+
+    const pct = correct / TOTAL;
+    let emoji, title, sub, stars;
+    if (pct === 1) { emoji='🏆'; title='완벽해요!'; sub='모든 문제를 맞췄어요!'; stars='★★★★★'; }
+    else if (pct >= 0.8) { emoji='🎉'; title='훌륭해요!'; sub='정말 잘했어요!'; stars='★★★★☆'; }
+    else if (pct >= 0.6) { emoji='😊'; title='잘했어요!'; sub='조금만 더 연습해봐요.'; stars='★★★☆☆'; }
+    else if (pct >= 0.4) { emoji='🤔'; title='아쉬워요!'; sub='다시 도전해보세요!'; stars='★★☆☆☆'; }
+    else { emoji='💪'; title='파이팅!'; sub='연습하면 분명 나아질 거예요!'; stars='★☆☆☆☆'; }
+
+    document.getElementById('resultEmoji').textContent = emoji;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultSub').textContent = sub;
+    document.getElementById('resultStars').textContent = stars;
+    document.getElementById('rScore').textContent = score;
+    document.getElementById('rCorrect').textContent = `${correct}/10`;
+    document.getElementById('rStreak').textContent = maxStreak;
+  }
+
+  function retryGame() { startGame(); }
+
+  function goHome() {
+    clearInterval(timerInterval);
+    showScreen('startScreen');
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+</script>
+</body>
+</html>
